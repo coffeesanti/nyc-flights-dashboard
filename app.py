@@ -429,46 +429,44 @@ app.index_string = '''
         .VirtualizedSelectFocusedOption { background-color: #1e1e4a !important; }
 
         /* ═══════════════════════════════════════════════════
-           SLIDERS & RANGE SLIDERS — readable marks
+           SLIDERS & RANGE SLIDERS  (Dash 4.x classes)
            ═══════════════════════════════════════════════════ */
-        .rc-slider-mark-text {
-            color: var(--text-muted) !important;
+        .dash-slider-mark {
+            color: #b0b4cc !important;
             font-family: 'DM Sans', sans-serif !important;
-            font-size: 0.72rem !important;
-            font-weight: 500 !important;
+            font-size: 0.78rem !important;
+            font-weight: 600 !important;
         }
-        .rc-slider-mark-text-active {
-            color: var(--text-primary) !important;
+        .dash-slider-root {
+            --slider-color: var(--accent) !important;
         }
-        .rc-slider-rail {
-            background-color: var(--border-dim) !important;
-            height: 4px !important;
-        }
-        .rc-slider-track {
+        .dash-slider-track {
             background: var(--gradient-accent) !important;
-            height: 4px !important;
         }
-        .rc-slider-handle {
+        .dash-slider-range {
+            background: var(--gradient-accent) !important;
+        }
+        .dash-slider-thumb {
             border-color: var(--accent) !important;
             background-color: var(--bg-card) !important;
-            width: 16px !important;
-            height: 16px !important;
-            margin-top: -6px !important;
             box-shadow: 0 0 8px var(--accent-dim) !important;
-            opacity: 1 !important;
         }
-        .rc-slider-handle:hover,
-        .rc-slider-handle:active,
-        .rc-slider-handle-dragging {
+        .dash-slider-thumb:hover,
+        .dash-slider-thumb:active {
             border-color: var(--accent) !important;
             box-shadow: 0 0 14px var(--accent-dim) !important;
         }
-        .rc-slider-dot {
-            border-color: var(--border-dim) !important;
-            background-color: var(--bg-surface) !important;
-        }
-        .rc-slider-dot-active {
-            border-color: var(--accent) !important;
+        /* Number input boxes beside sliders */
+        .dash-range-slider-input,
+        .dash-input-container.dash-range-slider-input {
+            background-color: #12122a !important;
+            color: var(--accent) !important;
+            border: 1px solid var(--border-dim) !important;
+            border-radius: 6px !important;
+            font-family: 'Sora', sans-serif !important;
+            font-weight: 600 !important;
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
         }
 
         /* ═══════════════════════════════════════════════════
