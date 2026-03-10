@@ -153,9 +153,9 @@ AIRLINE_COLORS = {
 }
 
 CARD_STYLE = {
-    "backgroundColor": "#1e1e2f",
-    "border": "1px solid #2d2d44",
-    "borderRadius": "12px",
+    "backgroundColor": "var(--bg-card, #12122a)",
+    "border": "1px solid var(--border-dim, #1e1e3a)",
+    "borderRadius": "14px",
 }
 
 # ================================================================
@@ -164,13 +164,386 @@ CARD_STYLE = {
 
 app = dash.Dash(
     __name__,
-    external_stylesheets=[dbc.themes.DARKLY],
+    external_stylesheets=[
+        dbc.themes.DARKLY,
+        "https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap",
+    ],
     suppress_callback_exceptions=True,
     meta_tags=[{"name": "viewport",
                 "content": "width=device-width, initial-scale=1"}],
 )
 app.title = "NYC Flights 2023"
 server = app.server  # exposed for gunicorn
+
+# ── Custom CSS injected via index_string ──────────────────────────
+app.index_string = '''
+<!DOCTYPE html>
+<html>
+<head>
+    {%metas%}
+    <title>{%title%}</title>
+    {%favicon%}
+    {%css%}
+    <style>
+        /* ═══════════════════════════════════════════════════
+           ROOT & TYPOGRAPHY
+           ═══════════════════════════════════════════════════ */
+        :root {
+            --bg-deep: #060611;
+            --bg-surface: #0d0d1a;
+            --bg-card: #12122a;
+            --bg-card-hover: #181840;
+            --border-dim: #1e1e3a;
+            --border-glow: #00d4ff22;
+            --accent: #00d4ff;
+            --accent-dim: #00d4ff44;
+            --accent-glow: #00d4ff18;
+            --text-primary: #e8eaf0;
+            --text-muted: #7a7f9a;
+            --gradient-accent: linear-gradient(135deg, #00d4ff 0%, #0088cc 100%);
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif !important;
+            background: var(--bg-deep) !important;
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, h5, h6,
+        .navbar-brand, .nav-link, .kpi-value {
+            font-family: 'Sora', sans-serif !important;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           NAVBAR — cockpit instrument bar
+           ═══════════════════════════════════════════════════ */
+        .navbar {
+            background: linear-gradient(180deg, #0a0a1e 0%, #060611 100%) !important;
+            border-bottom: 1px solid var(--border-dim) !important;
+            padding: 0.8rem 0 !important;
+            position: relative;
+        }
+        .navbar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gradient-accent);
+            opacity: 0.7;
+        }
+        .navbar-brand {
+            letter-spacing: 0.03em;
+            font-weight: 700 !important;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           TABS — illuminated selector strip
+           ═══════════════════════════════════════════════════ */
+        .nav-tabs {
+            border-bottom: 1px solid var(--border-dim) !important;
+            gap: 4px;
+        }
+        .nav-tabs .nav-link {
+            font-family: 'Sora', sans-serif !important;
+            font-size: 0.85rem !important;
+            font-weight: 500;
+            color: var(--text-muted) !important;
+            background: transparent !important;
+            border: 1px solid transparent !important;
+            border-radius: 8px 8px 0 0 !important;
+            padding: 0.65rem 1.2rem !important;
+            transition: all 0.25s ease;
+            letter-spacing: 0.02em;
+        }
+        .nav-tabs .nav-link:hover {
+            color: var(--text-primary) !important;
+            background: var(--accent-glow) !important;
+            border-color: var(--border-dim) !important;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--accent) !important;
+            font-weight: 700 !important;
+            background: var(--bg-card) !important;
+            border-color: var(--border-dim) var(--border-dim) var(--bg-card) !important;
+            box-shadow: 0 -2px 12px var(--accent-dim);
+        }
+
+        /* ═══════════════════════════════════════════════════
+           CARDS — glass-panel instrument readouts
+           ═══════════════════════════════════════════════════ */
+        .dash-card {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-dim) !important;
+            border-radius: 14px !important;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .dash-card:hover {
+            border-color: var(--accent-dim) !important;
+            box-shadow: 0 4px 24px rgba(0, 212, 255, 0.06);
+        }
+
+        /* KPI cards */
+        .kpi-card {
+            background: linear-gradient(145deg, #12122a 0%, #0e0e24 100%) !important;
+            border: 1px solid var(--border-dim) !important;
+            border-radius: 14px !important;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-accent);
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+        .kpi-card:hover {
+            border-color: var(--accent-dim) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.08);
+        }
+        .kpi-card:hover::before {
+            opacity: 1;
+        }
+        .kpi-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .kpi-value {
+            font-family: 'Sora', sans-serif !important;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1.1;
+        }
+        .kpi-icon {
+            font-size: 1.4rem;
+            margin-right: 6px;
+            opacity: 0.85;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           DROPDOWNS — Dash 4.x dark overrides
+           ═══════════════════════════════════════════════════ */
+        /* Trigger / closed state */
+        .dash-dropdown-grid-container {
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--border-dim) !important;
+            border-radius: 10px !important;
+            color: var(--text-primary) !important;
+            transition: border-color 0.2s ease;
+        }
+        .dash-dropdown-grid-container:hover,
+        .dash-dropdown-grid-container:focus-within {
+            border-color: var(--accent-dim) !important;
+        }
+        .dash-dropdown-value,
+        .dash-dropdown-value-item,
+        .dash-dropdown input {
+            color: var(--text-primary) !important;
+        }
+        .dash-dropdown input::placeholder {
+            color: var(--text-muted) !important;
+        }
+        /* Clear & arrow icons */
+        .dash-dropdown-clear svg,
+        .dash-dropdown-trigger svg {
+            fill: var(--text-muted) !important;
+        }
+        /* Open menu / listbox */
+        .dash-dropdown-listbox,
+        [role="listbox"] {
+            background-color: #14143a !important;
+            border: 1px solid var(--border-dim) !important;
+            border-radius: 0 0 10px 10px !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+        }
+        .dash-dropdown-option,
+        [role="option"] {
+            background-color: #14143a !important;
+            color: var(--text-primary) !important;
+            transition: background-color 0.15s ease;
+        }
+        .dash-dropdown-option:hover,
+        .dash-dropdown-option[aria-selected="true"],
+        [role="option"]:hover {
+            background-color: #1e1e4a !important;
+        }
+        /* Multi-select chips */
+        .dash-dropdown-chip {
+            background-color: var(--accent-dim) !important;
+            border: 1px solid var(--accent) !important;
+            color: var(--text-primary) !important;
+            border-radius: 6px !important;
+        }
+        .dash-dropdown-chip-remove svg {
+            fill: var(--accent) !important;
+        }
+
+        /* Search box inside dropdown */
+        .dash-dropdown-search-container {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-dim) !important;
+        }
+        .dash-dropdown-search {
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-dim) !important;
+            border-radius: 8px !important;
+            caret-color: var(--accent);
+        }
+        .dash-dropdown-search::placeholder {
+            color: var(--text-muted) !important;
+        }
+
+        /* Legacy React-Select fallback (older Dash) */
+        .Select-control {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-dim) !important;
+            color: var(--text-primary) !important;
+        }
+        .Select-menu-outer {
+            background-color: #14143a !important;
+            border: 1px solid var(--border-dim) !important;
+        }
+        .Select-value-label,
+        .Select-placeholder,
+        .Select-input > input {
+            color: var(--text-primary) !important;
+        }
+        .Select-placeholder { color: var(--text-muted) !important; }
+        .VirtualizedSelectOption { background-color: #14143a !important; color: var(--text-primary) !important; }
+        .VirtualizedSelectFocusedOption { background-color: #1e1e4a !important; }
+
+        /* ═══════════════════════════════════════════════════
+           SLIDERS & RANGE SLIDERS — readable marks
+           ═══════════════════════════════════════════════════ */
+        .rc-slider-mark-text {
+            color: var(--text-muted) !important;
+            font-family: 'DM Sans', sans-serif !important;
+            font-size: 0.72rem !important;
+            font-weight: 500 !important;
+        }
+        .rc-slider-mark-text-active {
+            color: var(--text-primary) !important;
+        }
+        .rc-slider-rail {
+            background-color: var(--border-dim) !important;
+            height: 4px !important;
+        }
+        .rc-slider-track {
+            background: var(--gradient-accent) !important;
+            height: 4px !important;
+        }
+        .rc-slider-handle {
+            border-color: var(--accent) !important;
+            background-color: var(--bg-card) !important;
+            width: 16px !important;
+            height: 16px !important;
+            margin-top: -6px !important;
+            box-shadow: 0 0 8px var(--accent-dim) !important;
+            opacity: 1 !important;
+        }
+        .rc-slider-handle:hover,
+        .rc-slider-handle:active,
+        .rc-slider-handle-dragging {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 14px var(--accent-dim) !important;
+        }
+        .rc-slider-dot {
+            border-color: var(--border-dim) !important;
+            background-color: var(--bg-surface) !important;
+        }
+        .rc-slider-dot-active {
+            border-color: var(--accent) !important;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           FILTER LABELS
+           ═══════════════════════════════════════════════════ */
+        .filter-label {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           FOOTER
+           ═══════════════════════════════════════════════════ */
+        .site-footer {
+            border-top: 1px solid var(--border-dim);
+            padding: 1.2rem 0;
+            margin-top: 2rem;
+        }
+        .site-footer p {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+        }
+        .site-footer .accent-dot {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent);
+            margin: 0 10px;
+            vertical-align: middle;
+            opacity: 0.6;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           PLOTLY CHART CONTAINERS
+           ═══════════════════════════════════════════════════ */
+        .js-plotly-plot .plotly .modebar {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .js-plotly-plot:hover .plotly .modebar {
+            opacity: 0.7;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           SCROLLBAR (webkit)
+           ═══════════════════════════════════════════════════ */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-dim);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-dim);
+        }
+    </style>
+</head>
+<body>
+    {%app_entry%}
+    <footer>
+        {%config%}
+        {%scripts%}
+        {%renderer%}
+    </footer>
+</body>
+</html>
+'''
 
 
 # ================================================================
@@ -180,12 +553,13 @@ server = app.server  # exposed for gunicorn
 def kpi_card(title, value, icon=""):
     return dbc.Card(
         dbc.CardBody([
-            html.P(title, className="text-muted mb-1",
-                   style={"fontSize": "0.85rem"}),
-            html.H3(f"{icon} {value}", className="mb-0",
-                     style={"color": ACCENT, "fontWeight": "700"}),
-        ]),
-        style=CARD_STYLE, className="shadow-sm",
+            html.P(title, className="kpi-label mb-0"),
+            html.Div([
+                html.Span(icon, className="kpi-icon") if icon else None,
+                html.Span(value, className="kpi-value"),
+            ], style={"display": "flex", "alignItems": "center"}),
+        ], style={"padding": "1rem 1.2rem"}),
+        className="kpi-card",
     )
 
 
@@ -214,17 +588,17 @@ page1 = dbc.Container([
     dbc.Row(id="map-kpis", className="g-3 mb-3"),
     dbc.Row([
         dbc.Col([
-            html.Label("Origin Airport", className="text-muted small"),
+            html.Label("Origin Airport", className="filter-label"),
             dcc.Dropdown(id="map-origin", options=origin_options, value="ALL",
-                         style={"color": "#000"}),
+                         className="dash-dropdown"),
         ], md=3),
         dbc.Col([
-            html.Label("Airline", className="text-muted small"),
+            html.Label("Airline", className="filter-label"),
             dcc.Dropdown(id="map-carrier", options=carrier_options, value="ALL",
-                         style={"color": "#000"}),
+                         className="dash-dropdown"),
         ], md=3),
         dbc.Col([
-            html.Label("Color Destinations By", className="text-muted small"),
+            html.Label("Color Destinations By", className="filter-label"),
             dcc.Dropdown(
                 id="map-color-by",
                 options=[
@@ -233,13 +607,13 @@ page1 = dbc.Container([
                     {"label": "Avg Arrival Delay", "value": "avg_arr_delay"},
                     {"label": "Avg Speed (mph)", "value": "avg_speed"},
                 ],
-                value="flight_count", style={"color": "#000"},
+                value="flight_count", className="dash-dropdown",
             ),
         ], md=3),
     ], className="mb-3"),
     dbc.Card(
         dcc.Graph(id="route-map", style={"height": "600px"}),
-        style=CARD_STYLE, className="p-2",
+        className="dash-card p-2",
     ),
 ], fluid=True)
 
@@ -249,7 +623,7 @@ page1 = dbc.Container([
 page2 = dbc.Container([
     dbc.Row([
         dbc.Col([
-            html.Label("Sort Airlines By", className="text-muted small"),
+            html.Label("Sort Airlines By", className="filter-label"),
             dcc.Dropdown(
                 id="perf-sort",
                 options=[
@@ -258,11 +632,11 @@ page2 = dbc.Container([
                     {"label": "Avg Arrival Delay", "value": "avg_arr_delay"},
                     {"label": "Avg Distance", "value": "avg_distance"},
                 ],
-                value="total_flights", style={"color": "#000"},
+                value="total_flights", className="dash-dropdown",
             ),
         ], md=3),
         dbc.Col([
-            html.Label("Month Range", className="text-muted small"),
+            html.Label("Month Range", className="filter-label"),
             dcc.RangeSlider(
                 id="perf-months", min=1, max=12, step=1, value=[1, 12],
                 marks={i: MONTH_NAMES[i] for i in range(1, 13)},
@@ -272,13 +646,13 @@ page2 = dbc.Container([
     ], className="mb-3"),
     dbc.Row([
         dbc.Col(dbc.Card(dcc.Graph(id="perf-flights-bar"),
-                         style=CARD_STYLE, className="p-2"), md=6),
+                         className="dash-card p-2"), md=6),
         dbc.Col(dbc.Card(dcc.Graph(id="perf-delay-bar"),
-                         style=CARD_STYLE, className="p-2"), md=6),
+                         className="dash-card p-2"), md=6),
     ], className="g-3 mb-3"),
     dbc.Row([
         dbc.Col(dbc.Card(dcc.Graph(id="perf-scatter"),
-                         style=CARD_STYLE, className="p-2"), md=12),
+                         className="dash-card p-2"), md=12),
     ], className="g-3"),
 ], fluid=True)
 
@@ -288,22 +662,22 @@ page2 = dbc.Container([
 page3 = dbc.Container([
     dbc.Row([
         dbc.Col([
-            html.Label("Origin", className="text-muted small"),
+            html.Label("Origin", className="filter-label"),
             dcc.Dropdown(id="delay-origin", options=origin_options,
-                         value="ALL", style={"color": "#000"}),
+                         value="ALL", className="dash-dropdown"),
         ], md=2),
         dbc.Col([
-            html.Label("Airlines", className="text-muted small"),
+            html.Label("Airlines", className="filter-label"),
             dcc.Dropdown(
                 id="delay-carriers",
                 options=[{"label": name, "value": code}
                          for code, name in carrier_pairs],
-                value=[], multi=True, style={"color": "#000"},
+                value=[], multi=True, className="dash-dropdown",
                 placeholder="All airlines",
             ),
         ], md=4),
         dbc.Col([
-            html.Label("Month Range", className="text-muted small"),
+            html.Label("Month Range", className="filter-label"),
             dcc.RangeSlider(
                 id="delay-months", min=1, max=12, step=1, value=[1, 12],
                 marks={i: MONTH_NAMES[i] for i in range(1, 13)},
@@ -311,7 +685,7 @@ page3 = dbc.Container([
             ),
         ], md=4),
         dbc.Col([
-            html.Label("Min Delay (min)", className="text-muted small"),
+            html.Label("Min Delay (min)", className="filter-label"),
             dcc.Slider(
                 id="delay-threshold", min=0, max=120, step=15, value=0,
                 marks={0: "0", 30: "30", 60: "60", 90: "90", 120: "120+"},
@@ -320,13 +694,13 @@ page3 = dbc.Container([
     ], className="mb-3"),
     dbc.Row([
         dbc.Col(dbc.Card(dcc.Graph(id="delay-histogram"),
-                         style=CARD_STYLE, className="p-2"), md=6),
+                         className="dash-card p-2"), md=6),
         dbc.Col(dbc.Card(dcc.Graph(id="delay-scatter"),
-                         style=CARD_STYLE, className="p-2"), md=6),
+                         className="dash-card p-2"), md=6),
     ], className="g-3 mb-3"),
     dbc.Row([
         dbc.Col(dbc.Card(dcc.Graph(id="delay-heatmap"),
-                         style=CARD_STYLE, className="p-2"), md=12),
+                         className="dash-card p-2"), md=12),
     ], className="g-3"),
 ], fluid=True)
 
@@ -336,18 +710,18 @@ page3 = dbc.Container([
 page4 = dbc.Container([
     dbc.Row([
         dbc.Col([
-            html.Label("Origin", className="text-muted small"),
+            html.Label("Origin", className="filter-label"),
             dcc.Dropdown(id="speed-origin", options=origin_options,
-                         value="ALL", style={"color": "#000"}),
+                         value="ALL", className="dash-dropdown"),
         ], md=3),
         dbc.Col([
-            html.Label("Manufacturer", className="text-muted small"),
+            html.Label("Manufacturer", className="filter-label"),
             dcc.Dropdown(id="speed-manufacturer",
                          options=manufacturer_options, value="ALL",
-                         style={"color": "#000"}),
+                         className="dash-dropdown"),
         ], md=3),
         dbc.Col([
-            html.Label("Min Flights per Route", className="text-muted small"),
+            html.Label("Min Flights per Route", className="filter-label"),
             dcc.Slider(
                 id="speed-min-flights", min=10, max=500, step=10, value=50,
                 marks={10: "10", 100: "100", 250: "250", 500: "500"},
@@ -356,13 +730,13 @@ page4 = dbc.Container([
     ], className="mb-3"),
     dbc.Row([
         dbc.Col(dbc.Card(dcc.Graph(id="speed-top-routes"),
-                         style=CARD_STYLE, className="p-2"), md=6),
+                         className="dash-card p-2"), md=6),
         dbc.Col(dbc.Card(dcc.Graph(id="speed-box"),
-                         style=CARD_STYLE, className="p-2"), md=6),
+                         className="dash-card p-2"), md=6),
     ], className="g-3 mb-3"),
     dbc.Row([
         dbc.Col(dbc.Card(dcc.Graph(id="speed-age-scatter"),
-                         style=CARD_STYLE, className="p-2"), md=12),
+                         className="dash-card p-2"), md=12),
     ], className="g-3"),
 ], fluid=True)
 
@@ -376,42 +750,54 @@ app.layout = html.Div([
     dbc.Navbar(
         dbc.Container([
             dbc.NavbarBrand(
-                [html.Span("\u2708\uFE0F", style={"fontSize": "1.5rem",
-                                                    "marginRight": "10px"}),
-                 "NYC Flights 2023"],
-                className="fw-bold", style={"fontSize": "1.3rem"},
+                [html.Span("\u2708\uFE0F",
+                           style={"fontSize": "1.6rem", "marginRight": "12px",
+                                  "filter": "drop-shadow(0 0 6px rgba(0,212,255,0.4))"}),
+                 html.Span("NYC FLIGHTS", style={"fontWeight": "800",
+                                                  "letterSpacing": "0.06em"}),
+                 html.Span(" 2023", style={"fontWeight": "300",
+                                            "color": ACCENT,
+                                            "marginLeft": "6px"})],
+                style={"fontSize": "1.3rem", "display": "flex",
+                        "alignItems": "center"},
             ),
-            html.Span("435K+ flights from JFK, EWR & LGA",
-                       className="text-muted d-none d-md-inline"),
+            html.Span([
+                html.Span("435K+ flights",
+                           style={"color": "#e8eaf0", "fontWeight": "600"}),
+                html.Span(" from JFK, EWR & LGA",
+                           style={"color": "#7a7f9a"}),
+            ], className="d-none d-md-inline",
+               style={"fontFamily": "'DM Sans', sans-serif",
+                       "fontSize": "0.85rem"}),
         ], fluid=True),
-        color="#0d0d1a", dark=True, className="mb-3 shadow",
-        style={"borderBottom": f"2px solid {ACCENT}"},
+        dark=True, className="mb-3",
     ),
 
     # --- Tabs ---
     dbc.Container([
         dbc.Tabs([
-            dbc.Tab(page1, label="\U0001F5FA Route Map", tab_id="tab-map",
-                    active_label_style={"color": ACCENT, "fontWeight": "bold"}),
+            dbc.Tab(page1, label="\U0001F5FA Route Map", tab_id="tab-map"),
             dbc.Tab(page2, label="\U0001F4CA Airline Performance",
-                    tab_id="tab-perf",
-                    active_label_style={"color": ACCENT, "fontWeight": "bold"}),
+                    tab_id="tab-perf"),
             dbc.Tab(page3, label="\u23F1 Delay Deep Dive",
-                    tab_id="tab-delay",
-                    active_label_style={"color": ACCENT, "fontWeight": "bold"}),
+                    tab_id="tab-delay"),
             dbc.Tab(page4, label="\U0001F6E9 Fleet & Speed",
-                    tab_id="tab-speed",
-                    active_label_style={"color": ACCENT, "fontWeight": "bold"}),
+                    tab_id="tab-speed"),
         ], id="tabs", active_tab="tab-map", className="mb-3"),
     ], fluid=True),
 
     # --- Footer ---
     html.Footer(
-        html.P("Santiago Giorgini | Data Science with Python | HW3",
-               className="text-muted text-center mt-4 mb-3",
-               style={"fontSize": "0.8rem"}),
+        html.P([
+            "Santiago Giorgini",
+            html.Span(className="accent-dot"),
+            "Data Science with Python",
+            html.Span(className="accent-dot"),
+            "HW3",
+        ], className="text-center mb-0"),
+        className="site-footer",
     ),
-], style={"backgroundColor": "#0d0d1a", "minHeight": "100vh"})
+], style={"backgroundColor": "var(--bg-deep, #060611)", "minHeight": "100vh"})
 
 
 # ================================================================
